@@ -1,0 +1,42 @@
+version: '2'
+
+services:
+  web:
+    image: nginx:latest
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./site.conf:/etc/nginx/nginx.conf
+      - ./src/${PROJECT_NAME}:/var/www/${PROJECT_NAME}
+    links:
+      - php
+  php:
+    image: php:7.3.18-fpm-alpine
+    build:
+      context: ./composer
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./src/${PROJECT_NAME}:/var/www/${PROJECT_NAME}
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/docker-add-setting.ini
+    links:
+      - mysql
+  mysql:
+    image: mysql:8.0
+    volumes:
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    restart: always
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ${PROJECT_NAME}
+      MYSQL_ROOT_PASSWORD: mysql
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
