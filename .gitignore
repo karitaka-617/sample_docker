@@ -1,2 +1,6 @@
 .env
 /src
+._composer
+._docker-compose.yml
+._site.conf
+.idea/
